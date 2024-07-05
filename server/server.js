@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import User from "./Schema/User.js";
 import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
+import cors from "cors";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -13,6 +14,7 @@ const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for
 const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
 
 app.use(express.json());
+app.use(cors());
 connectDB();
 
 const formatDatatoSend = (user) => {
@@ -88,7 +90,6 @@ app.post("/signup", async (req, res) => {
 });
 
 app.post("/signin", (req, res) => {
-    
   let { email, password } = req.body;
 
   User.findOne({ "personal_info.email": email })
