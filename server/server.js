@@ -118,11 +118,10 @@ app.post("/signin", (req, res) => {
           }
         });
       } else {
-        return res
-          .status(403)
-          .json({
-            error: "Account was created using google, try logging with google!",
-          });
+        return res.status(403).json({
+          error:
+            "Account was created using google, try logging with google please!",
+        });
       }
     })
     .catch((err) => {
