@@ -2,14 +2,20 @@ import express from "express";
 import "dotenv/config";
 import connectDB from "./config/db.js";
 import bcrypt from "bcrypt";
-import User from "./Schema/User.js";
 import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
 import cors from "cors";
+import admin from "firebase-admin";
+import serviceAccountKey from "./blogging-website-7a22c-firebase-adminsdk-d9zby-5c6d73a4b0.json" assert { type: "json" };
+import User from "./Schema/User.js";
+import { getAuth } from "firebase-admin/auth";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccountKey),
+});
 const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for email
 const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
 
@@ -98,20 +104,86 @@ app.post("/signin", (req, res) => {
         return res.status(403).json({ error: "User not found" });
       }
 
-      bcrypt.compare(password, user.personal_info.password, (err, result) => {
-        if (err) {
-          return res.status(403).json({ error: "Error in comparing password" });
-        }
-        if (!result) {
-          return res.status(403).json({ error: "Invalid password" });
-        } else {
-          return res.status(200).json(formatDatatoSend(user));
-        }
-      });
+      if (!user.google_auth) {
+        bcrypt.compare(password, user.personal_info.password, (err, result) => {
+          if (err) {
+            return res
+              .status(403)
+              .json({ error: "Error in comparing password" });
+          }
+          if (!result) {
+            return res.status(403).json({ error: "Invalid password" });
+          } else {
+            return res.status(200).json(formatDatatoSend(user));
+          }
+        });
+      } else {
+        return res
+          .status(403)
+          .json({
+            error: "Account was created using google, try logging with google!",
+          });
+      }
     })
     .catch((err) => {
       console.log(err.message);
       return res.status(500).json({ error: err.message });
+    });
+});
+
+app.post("/google-auth", async (req, res) => {
+  let { access_token } = req.body;
+  getAuth()
+    .verifyIdToken(access_token)
+    .then(async (decodeUser) => {
+      let { email, name, picture } = decodeUser;
+      picture = picture.replace("s96-c", "s384-c");
+
+      let user = await User.findOne({ "personal_info.email": email })
+        .select(
+          "personal_info.fullname personal_info.username personal_info.profile_img google-auth"
+        )
+        .then((u) => {
+          return u || null;
+        })
+        .catch((err) => {
+          return res.status(500).json({ error: err.message });
+        });
+
+      if (user) {
+        if (!user.google_auth) {
+          return res.status(403).json({
+            error:
+              "this email was signup  without google . please login with a different email",
+          });
+        }
+      } else {
+        let username = await generateUsername(email);
+        user = new User({
+          personal_info: {
+            fullname: name,
+            username: username,
+            email,
+            profile_img: picture,
+            google_auth: true,
+          },
+        });
+
+        await user
+          .save()
+          .then((u) => {
+            user = u;
+          })
+          .catch((err) => {
+            return res.status(500).json({ error: err.message });
+          });
+      }
+      return res.status(200).json(formatDatatoSend(user));
+    })
+    .catch((err) => {
+      return res
+        .status(500)
+        .json({ error: "failed to authenticate with google" });
     });
 });
 
