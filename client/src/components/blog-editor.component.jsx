@@ -1,12 +1,31 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 import logo from "../imgs/logo.png";
 import AnimationWrapper from "../common/page-animation";
 import defaultBanner from "../imgs/blog banner.png";
+import { uploadImage } from "../common/aws";
+import { toast, Toaster } from "react-hot-toast";
+
 const BlogEditor = () => {
+  let blogBannerRef = useRef();
   const handleBannerUpload = (e) => {
-    let image = e.target.files[0];
-    console.log(image);
+    let img = e.target.files[0];
+
+    if (img) {
+      let loadingToast = toast.loading("Uploading.....");
+      uploadImage(img)
+        .then((url) => {
+          if (url) {
+            toast.dismiss(loadingToast);
+            toast.success("Uploaded👍");
+            blogBannerRef.current.src = url;
+          }
+        })
+        .catch((err) => {
+          toast.dismiss(loadingToast);
+          return toast.error("Error Occured🤯");
+        });
+    }
   };
   return (
     <>
@@ -22,13 +41,13 @@ const BlogEditor = () => {
           <button className="btn-light py-2 ">Save Draft</button>
         </div>
       </nav>
-
+      <Toaster />
       <AnimationWrapper>
         <section>
           <div className="mx-auto max-w-[900px] w-full">
             <div className="relative aspect-video hover:opacity-80 bg-white border-2 border-grey">
               <label htmlFor="uploadBanner">
-                <img src={defaultBanner} alt="default" className="z-20" />
+                <img ref={blogBannerRef} src={defaultBanner} className="z-20" />
                 <input
                   id="uploadBanner"
                   type="file"
