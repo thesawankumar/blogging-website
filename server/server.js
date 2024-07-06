@@ -243,17 +243,19 @@ app.post("/create-blog", verifyJWT, (req, res) => {
   if (!title.length) {
     return res.status(403).json({ error: "title is required" });
   }
-  if (!des.length || des.length > 200) {
-    return res.status(403).json({ error: "description is required" });
-  }
-  if (!banner.length) {
-    return res.status(403).json({ error: "banner is required" });
-  }
-  if (!content.blocks || !content.blocks.length) {
-    return res.status(403).json({ error: "content is required" });
-  }
-  if (!tags.length || tags.length > 10) {
-    return res.status(403).json({ error: "tags is required" });
+  if (!draft) {
+    if (!des.length || des.length > 200) {
+      return res.status(403).json({ error: "description is required" });
+    }
+    if (!banner.length) {
+      return res.status(403).json({ error: "banner is required" });
+    }
+    if (!content.blocks || !content.blocks.length) {
+      return res.status(403).json({ error: "content is required" });
+    }
+    if (!tags.length || tags.length > 10) {
+      return res.status(403).json({ error: "tags is required" });
+    }
   }
 
   const processedTags = tags.map((tag) => tag.toLowerCase());
@@ -263,7 +265,7 @@ app.post("/create-blog", verifyJWT, (req, res) => {
       .replace(/\s+/g, "_")
       .trim() + nanoid();
 
-  let blog = new Blog({
+  const blog = new Blog({
     author: authorId,
     blog_id,
     title,
@@ -276,7 +278,7 @@ app.post("/create-blog", verifyJWT, (req, res) => {
   blog
     .save()
     .then((blog) => {
-      let incrementVal = draft ? 0 : 1;
+      const incrementVal = draft ? 1 : 0;
 
       User.findOneAndUpdate(
         { _id: authorId },
