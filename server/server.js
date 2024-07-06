@@ -8,6 +8,7 @@ import cors from "cors";
 import admin from "firebase-admin";
 import serviceAccountKey from "./admin.json" assert { type: "json" };
 import User from "./Schema/User.js";
+import Blog from "./Schema/Blog.js";
 import { getAuth } from "firebase-admin/auth";
 import aws from "aws-sdk";
 
@@ -41,6 +42,17 @@ const generateUploadUrl = async () => {
     Key: imageName,
     Expires: 1000,
     ContentType: "image/jpeg",
+  });
+};
+
+const verifyJWT = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (token == null) return res.status(401).json({ error: "No access token" });
+  jwt.verify(token, process.env.SECRET_ACCESS_KEY, (err, user) => {
+    if (err) return res.status(403).json({ error: "Invalid token" });
+    req.user = user.id;
+    next();
   });
 };
 
@@ -214,6 +226,78 @@ app.post("/google-auth", async (req, res) => {
       return res
         .status(500)
         .json({ error: "failed to authenticate with google" });
+    });
+});
+
+app.post("/create-blog", verifyJWT, (req, res) => {
+  const authorId = req.user;
+  const {
+    title = "",
+    content = {},
+    tags = [],
+    des = "",
+    banner = "",
+    draft,
+  } = req.body;
+
+  if (!title.length) {
+    return res.status(403).json({ error: "title is required" });
+  }
+  if (!des.length || des.length > 200) {
+    return res.status(403).json({ error: "description is required" });
+  }
+  if (!banner.length) {
+    return res.status(403).json({ error: "banner is required" });
+  }
+  if (!content.blocks || !content.blocks.length) {
+    return res.status(403).json({ error: "content is required" });
+  }
+  if (!tags.length || tags.length > 10) {
+    return res.status(403).json({ error: "tags is required" });
+  }
+
+  const processedTags = tags.map((tag) => tag.toLowerCase());
+  const blog_id =
+    title
+      .replace(/[^a-zA-Z0-9]/g, " ")
+      .replace(/\s+/g, "_")
+      .trim() + nanoid();
+
+  let blog = new Blog({
+    author: authorId,
+    blog_id,
+    title,
+    content,
+    tags: processedTags,
+    des,
+    draft: Boolean(draft),
+  });
+
+  blog
+    .save()
+    .then((blog) => {
+      let incrementVal = draft ? 0 : 1;
+
+      User.findOneAndUpdate(
+        { _id: authorId },
+        {
+          $inc: { "account_info.total_posts": incrementVal },
+          $push: { blogs: blog._id },
+        }
+      )
+        .then((user) => {
+          return res.status(200).json({ id: blog.blog_id });
+        })
+        .catch((err) => {
+          console.log(err);
+          return res
+            .status(500)
+            .json({ error: "internal server error updated total post error" });
+        });
+    })
+    .catch((err) => {
+      console.log(err);
+      return res.status(500).json({ error: err.message });
     });
 });
 

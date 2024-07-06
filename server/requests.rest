@@ -1,3 +1,23 @@
 
+# POST http://localhost:3000/signup
+# Content-Type: application/json
 
-GET http://localhost:3000/get-upload-url
+# {
+#     "fullname":"john",
+#     "email":"john@gmail.com",
+#     "password":"Ji@23456677"
+# }
+
+POST http://localhost:3000/create-blog
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2ODk5ZTBlNTNhMDgzNTA0NDk0YWU3YSIsImlhdCI6MTcyMDI5NDkyN30.robvSQNcdTpzdC2wa1O-cw0tPeBcQE4gx-Mgr4KSOM8
+
+{
+    "title":"this is test blog",
+    "banner":"https://example.com/image-url",
+    "des":"this is a test blog",
+    "content":{
+        "blocks":[1,2]
+    },
+    "tags":["tags1","tags3"]
+}
