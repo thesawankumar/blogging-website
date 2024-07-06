@@ -9,6 +9,7 @@ import admin from "firebase-admin";
 import serviceAccountKey from "./admin.json" assert { type: "json" };
 import User from "./Schema/User.js";
 import { getAuth } from "firebase-admin/auth";
+import aws from "aws-sdk";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -22,6 +23,14 @@ const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for pa
 app.use(express.json());
 app.use(cors());
 connectDB();
+
+//setting up s3 bucket
+
+const s3 = new aws.S3({
+  region: "ap-south-1",
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+});
 
 const formatDatatoSend = (user) => {
   const access_token = jwt.sign(
