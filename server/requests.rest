@@ -21,4 +21,4 @@
 #     },
 #     "tags":["tags1","tags3"]
 # }
-GET http://localhost:3000/latest-blogs
+GET http://localhost:3000/trending-blogs
