@@ -78,6 +78,8 @@ export const createBlog = async (req, res) => {
 };
 
 export const latestBlogs = (req, res) => {
+  let { page } = req.body;
+
   let maxLimit = 5;
   Blog.find({ draft: false })
     .populate(
@@ -86,6 +88,7 @@ export const latestBlogs = (req, res) => {
     )
     .sort({ publishedAt: -1 })
     .select("blog_id title des banner activity tags publishedAt -_id")
+    .skip((page - 1) * maxLimit)
     .limit(maxLimit)
     .then((blogs) => {
       return res.status(200).json({ blogs });
@@ -94,7 +97,15 @@ export const latestBlogs = (req, res) => {
       return res.status(500).json({ error: err.message });
     });
 };
-
+export const latestBlogsCount = (req, res) => {
+  Blog.countDocuments({ draft: false })
+    .then((count) => {
+      return res.status(200).json({ totalDocs: count });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+};
 export const trendingBlogs = (req, res) => {
   let maxLimit = 5;
   Blog.find({ draft: false })
@@ -118,10 +129,10 @@ export const trendingBlogs = (req, res) => {
 };
 
 export const searchBlogs = (req, res) => {
-  let { tag } = req.body;
+  let { tag, page } = req.body;
   let findQuery = { tags: tag, draft: false };
 
-  let maxLimit = 5;
+  let maxLimit = 2;
   Blog.find(findQuery)
     .populate(
       "author",
@@ -129,9 +140,23 @@ export const searchBlogs = (req, res) => {
     )
     .sort({ publishedAt: -1 })
     .select("blog_id title des banner activity tags publishedAt -_id")
+    .skip((page - 1) * maxLimit)
     .limit(maxLimit)
     .then((blogs) => {
       return res.status(200).json({ blogs });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+};
+
+export const searchBlogsCount = (req, res) => {
+  let { tag } = req.body;
+  let findQuery = { tags: tag, draft: false };
+
+  Blog.countDocuments(findQuery)
+    .then((count) => {
+      return res.status(200).json({ totalDocs: count });
     })
     .catch((err) => {
       return res.status(500).json({ error: err.message });

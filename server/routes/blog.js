@@ -5,12 +5,16 @@ import {
   latestBlogs,
   trendingBlogs,
   searchBlogs,
+  latestBlogsCount,
+  searchBlogsCount,
 } from "../controllers/Blogs.js";
 const router = express.Router();
 
 router.post("/create-blog", verifyJWT, createBlog);
-router.get("/latest-blogs", latestBlogs);
+router.post("/latest-blogs", latestBlogs);
 router.get("/trending-blogs", trendingBlogs);
 router.post("/search-blogs", searchBlogs);
+router.post("/all-latest-blogs-count", latestBlogsCount);
+router.post("/search-blogs-count", searchBlogsCount);
 
 export default router;
