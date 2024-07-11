@@ -171,7 +171,7 @@ export const googleAuth = async (req, res) => {
     });
 };
 
-export const searchUsers = (eeq, res) => {
+export const searchUsers = (req, res) => {
   let { query } = req.body;
 
   User.find({ "personal_info.username": new RegExp(query, "i") })
