@@ -129,12 +129,14 @@ export const trendingBlogs = (req, res) => {
 };
 
 export const searchBlogs = (req, res) => {
-  let { tag, query, page } = req.body;
+  let { tag, query, page, author } = req.body;
   let findQuery;
   if (tag) {
     findQuery = { tags: tag, draft: false };
   } else if (query) {
     findQuery = { title: new RegExp(query, "i"), draft: false };
+  } else if (author) {
+    findQuery = { author, draft: false };
   }
 
   let maxLimit = 2;

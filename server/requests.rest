@@ -22,9 +22,9 @@
 #     "tags":["tags1","tags3"]
 # }
 # GET http://localhost:3000/trending-blogs
-POST http://localhost:3000/search-blogs
+POST http://localhost:3000/get-profile
 Content-Type: application/json
 
 {
-    "tag":"cook"
+    "username":"sawanaec.1"
 }
