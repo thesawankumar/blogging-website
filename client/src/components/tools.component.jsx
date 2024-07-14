@@ -2,7 +2,7 @@
 
 import Embed from "@editorjs/embed";
 import List from "@editorjs/list";
-import InlineCode from "@editorjs/inline-code";
+import Code from "@editorjs/code";
 import Image from "@editorjs/image";
 import Quote from "@editorjs/quote";
 import Marker from "@editorjs/marker";
@@ -42,7 +42,13 @@ export const tools = {
     class: List,
     inlineToolbar: true,
   },
-  inlineCode: InlineCode,
+  code: {
+    class: Code,
+    config: {
+      placeholder: "Enter your code here...",
+      theme: "dark", 
+    },
+  },
   image: {
     class: Image,
     config: {

@@ -7,6 +7,7 @@ import {
   searchBlogs,
   latestBlogsCount,
   searchBlogsCount,
+  getBlogs
 } from "../controllers/Blogs.js";
 const router = express.Router();
 
@@ -16,5 +17,6 @@ router.get("/trending-blogs", trendingBlogs);
 router.post("/search-blogs", searchBlogs);
 router.post("/all-latest-blogs-count", latestBlogsCount);
 router.post("/search-blogs-count", searchBlogsCount);
+router.post("/get-blog", getBlogs);
 
 export default router;

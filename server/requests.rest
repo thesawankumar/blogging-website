@@ -22,9 +22,15 @@
 #     "tags":["tags1","tags3"]
 # }
 # GET http://localhost:3000/trending-blogs
+# POST http://localhost:3000/get-blog
+# Content-Type: application/json
+
+# {
+#     "blog_id":"Elevate_Your_Cooking_Skills_Mastering_the_Art_of_Insert_Dish_Cuisine_aG5D8BfZEzc_EUDD7WiqL"
+# }
 POST http://localhost:3000/get-profile
 Content-Type: application/json
 
-{
-    "username":"sawanaec.1"
+{ 
+    "username":"sawankushwaha249"
 }
